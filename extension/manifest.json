@@ -1,11 +1,11 @@
 {
   "name": "onScrobble",
   "version": "0.1",
-  "description": "Seamlessly srobble info about songs you play on some social music web sites",
+  "description": "Scrobble vibes from soundcloud/bandcamp to last.fm",
   "content_scripts": [
     {
       "matches": ["http://soundcloud.com/*/*", "http://soundcloud.com/*"],
-      "js": ["jquery.js", "melo-social.js"]
+      "js": ["content/js/lib/jquery.js", "./content/js/app/onScrobble.js"]
     }
   ]
 }
