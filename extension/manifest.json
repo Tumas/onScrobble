@@ -1,0 +1,11 @@
+{
+  "name": "onScrobble",
+  "version": "0.1",
+  "description": "Seamlessly srobble info about songs you play on some social music web sites",
+  "content_scripts": [
+    {
+      "matches": ["http://soundcloud.com/*/*", "http://soundcloud.com/*"],
+      "js": ["jquery.js", "melo-social.js"]
+    }
+  ]
+}
