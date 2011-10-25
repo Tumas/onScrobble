@@ -1,63 +1,47 @@
-timestamp = () -> Math.round Number(new Date()) / 1000
-
 onScrobble =
-  events:
-    play: "onPlay"
-    pause: "onPause"
+  pre: (code, object) ->
+    "var onScrobble = #{code}();\n onScrobble.load();"
 
-  selectors:
-    player: 'div.player'
-    user:  'div.info-header span.user a'
-    track:  'div.info-header h3 a'
+  inject: (code)->
+    # no main, call directly
+    wrap = "function main(){\n#{this.pre(code)}\n}"
+    scriptNode = document.createElement("script")
+    scriptNode.textContent = "#{wrap};\nmain();"
+    document.head.appendChild(scriptNode)
 
-  artist: (username, track) ->
-    trackInfo = track
+  soundcloud: ->
+    events:
+      play: "onAudioPlay"
+      pause: "onAudioPause"
 
-    if not track.match(' (-|–) ') and not track.match(new RegExp("^#{username}"))
-      trackInfo = "#{username} - #{track}"
-    trackInfo
+    timestamp: -> Math.round Number(new Date()) / 1000
 
-  load: () ->
-    start_play = undefined
-    idle_start = undefined
-    idle_time  = 0
-    current_track = undefined
+    artist: (username, track) ->
+      trackInfo = track
 
-    console.log "onScrobble loaded"
-    console.log $(onScrobble.selectors.played).size()
+      if not track.match(' (-|–) ') and not track.match(new RegExp("^#{username}"))
+        trackInfo = "#{username} - #{track}"
+      trackInfo
 
-    $(onScrobble.selectors.player).each (index, el) ->
-      song = onScrobble.artist($(onScrobble.selectors.user, $(el)).text(), $(onScrobble.selectors.track, $(el)).text())
+    #canSubmit: (timePlayed, duration) ->
+    #  timePlayed >= duration / 2 or timePlayed >= 4 * 60 
 
-      $(el).bind onScrobble.events.play, () ->
-        console.log "event play: #{song}"
-        current = timestamp()
+    load: ->
+      idle_time  = 0
+      start_play = undefined
+      idle_start = undefined
+      current_track = undefined
 
-        if idle_start
-          idle_time += current - idle_start
-          idle_start = undefined
+      $(document).bind onScrobble.events.play, (info) ->
+        trackName = onScrobble.artist(info.track.user.username, info.track.title)
+        console.log("audio played: #{trackName}")
 
-        if not current_track or current_track != song
-          time_played = 0
-
-          if start_play
-            time_played = current - stat_play
-            time_played -= idle_time
-            console.log "Song played: #{time_played} seconds"
-            console.log "Idle time was: #{idle_time} seconds"
-
-        start_play = current
-        idle_time  = 0
-        current_track = song
-
-      $(el).bind onScrobble.events.pause, () ->
-        console.log "event.pause: #{song}"
-        idle_start = current
+      $(document).bind onScrobble.events.pause, (info) ->
+        trackName = onScrobble.artist(info.track.user.username, info.track.title)
+        console.log("audio paused: #{trackName}")
 
 (exports ? this).onScrobble = onScrobble
 
-# todo: proper loading
-$(() ->
-  onScrobble.load()
-  console.log "load test"
-);
+jQuery ($) ->
+  injected = onScrobble.soundcloud.toString()
+  onScrobble.inject injected
