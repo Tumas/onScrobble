@@ -2,10 +2,15 @@
   "name": "onScrobble",
   "version": "0.1",
   "description": "Scrobble vibes from soundcloud/bandcamp to last.fm",
+
+  "permissions": [
+    "http://ws.audioscrobbler.com/2.0/"
+  ],
+
   "content_scripts": [
     {
       "matches": ["http://soundcloud.com/*/*", "http://soundcloud.com/*"],
-      "js": ["content/js/lib/jquery.js", "./content/js/app/onScrobble.js"]
+      "js": ["/lib/jquery.js", "onScrobble.js", "soundcloud.js"]
     }
   ]
 }
