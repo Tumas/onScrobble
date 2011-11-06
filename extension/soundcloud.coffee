@@ -14,7 +14,6 @@ onScrobble.soundcloud =
       trackInfo
 
     load: ->
-      console.log this
       # State 
       idle_time  = 0
       idle_start = undefined
@@ -37,11 +36,12 @@ onScrobble.soundcloud =
 
         if onScrobble.canSubmit(play_time, duration)
           console.log "Submitting: #{track}"
+          onScrobble.submit track
           finish_submit = yes
         
       $(document).bind onScrobble.events.playStart, (info) ->
         # track changes here
-        trackName = onScrobble.artist(info.track.user.username, info.track.title)
+        newTrack = onScrobble.artist(info.track.user.username, info.track.title)
 
         idle_time += info.timeStamp - idle_start if idle_start
         play_time = onScrobble.secondify(info.timeStamp - idle_time - start_time)
@@ -49,16 +49,18 @@ onScrobble.soundcloud =
         # submit(track) if not finish_submit and canSubmit() 
         if not finish_submit and onScrobble.canSubmit(play_time, duration)
           console.log "Submitting: #{track}"
+          onScrobble.submit track
 
         # submit now playing for new track
-        console.log "Now playing: #{trackName}"
+        console.log "Now playing: #{newTrack}"
+        onScrobble.submitNowPlaying newTrack
         
         # reset
         idle_time = 0
         idle_start = undefined
         start_time = info.timeStamp
         finish_submit = no
-        track = trackName
+        track = newTrack
         duration = onScrobble.secondify(info.track.duration)
 
 jQuery ($) ->

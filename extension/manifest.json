@@ -7,6 +7,8 @@
     "http://ws.audioscrobbler.com/2.0/"
   ],
 
+  "background_page": "background.html",
+
   "content_scripts": [
     {
       "matches": ["http://soundcloud.com/*/*", "http://soundcloud.com/*"],
