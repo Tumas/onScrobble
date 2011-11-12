@@ -32,7 +32,11 @@ onScrobble =
     canSubmit: (timePlayed, duration) ->
       timePlayed >= 30 and (timePlayed >= duration/2 or timePlayed >= 60*4)
 
-    secondify: (ts) -> Math.round Number(ts/1000)
+    secondify: (ts) ->
+      Math.round Number(ts/1000)
+
+    decodeHTML: (string) ->
+      $("<textarea />").html(string).val()
 
     submit: (track) ->
       $('span#scrobblingPort').attr('track', track)
