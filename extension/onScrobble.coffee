@@ -21,11 +21,11 @@ onScrobble =
 
     $('span#scrobblingPort').bind 'Submit', (data) ->
       track = data.target.attributes[1].nodeValue
-      chrome.extension.sendRequest { type: data.type, track: track }
+      chrome.extension.sendRequest { type: data.type, track: $.parseJSON(track) }
 
     $('span#scrobblingPort').bind 'SubmitNowPlaying', (data) ->
       track = data.target.attributes[1].nodeValue
-      chrome.extension.sendRequest { type: data.type, track: track }
+      chrome.extension.sendRequest { type: data.type, track: $.parseJSON(track) }
 
   scrobbler: ->
     # duration must be in seconds
@@ -39,11 +39,12 @@ onScrobble =
       $("<textarea />").html(string).val()
 
     submit: (track) ->
-      $('span#scrobblingPort').attr('track', track)
+      # todo: better track passing
+      $('span#scrobblingPort').attr('track', JSON.stringify(track))
       document.getElementById('scrobblingPort').dispatchEvent submitEvent
 
     submitNowPlaying: (track) ->
-      $('span#scrobblingPort').attr('track', track)
+      $('span#scrobblingPort').attr('track', JSON.stringify(track))
       document.getElementById('scrobblingPort').dispatchEvent submitNPEvent
 
 (exports ? this).onScrobble = onScrobble

@@ -6,7 +6,7 @@ onScrobble.soundcloud =
       finish: "onAudioFinish"
       playStart: "onAudioPlayStart"
 
-    trackInfo: (trackData) ->
+    trackInfo: (trackData, timeStamp) ->
       title = onScrobble.decodeHTML trackData.title
       artist = onScrobble.decodeHTML trackData.user.username 
       temp = title.split(/\s-|–\s/)
@@ -16,10 +16,12 @@ onScrobble.soundcloud =
         title = $.trim(temp[1])
 
       {
-        name:  title,
+        track:  title,
         artist: artist,
-        duration: onScrobble.secondify(trackData.duration)
+        duration: onScrobble.secondify(trackData.duration),
+        timestamp: timeStamp
       }
+
 
     load: ->
       # State 
@@ -42,22 +44,19 @@ onScrobble.soundcloud =
         play_time = onScrobble.secondify(info.timeStamp - idle_time - start_time)
 
         if track and onScrobble.canSubmit(play_time, track.duration)
-          console.log "Submitting: #{track.name}"
           onScrobble.submit track
           finish_submit = yes
         
       $(document).bind onScrobble.events.playStart, (info) ->
         # track changes here
-        newTrack = onScrobble.trackInfo(info.track)
+        newTrack = onScrobble.trackInfo(info.track, onScrobble.secondify(info.timeStamp))
         idle_time += info.timeStamp - idle_start if idle_start
         play_time = onScrobble.secondify(info.timeStamp - idle_time - start_time)
 
         if track and not finish_submit and onScrobble.canSubmit(play_time, track.duration)
-          console.log "Submitting: #{track.name}"
           onScrobble.submit track
 
         # submit now playing for new track
-        console.log "Now playing: #{newTrack.name}"
         onScrobble.submitNowPlaying newTrack
         
         # reset

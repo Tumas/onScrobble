@@ -4,16 +4,32 @@ lastFM =
   secret: "a98e0e7d1d10805e9898b483ba396a38"
 
   scrobbler:
+    # TODO: one method + fallback for failed scrobbles
     submitNowPlaying: (track) ->
       # some filtering?
       params = $.extend(track, { api_key: lastFM.api_key, method: "track.updateNowPlaying" })
       params = lastFM.auth.sign(params)
 
       if params
-        $.post(
+        $.ajax(
           url: "#{lastFM.base_url}#{$.param(params)}",
+          type: 'POST',
           success: (data)->
             console.log "OK now playing"
+          error: (data) ->
+            console.log "could not. Reason: #{$('error', data.responseText).text()}"
+        )
+
+    submit: (track) ->
+      params = $.extend(track, { api_key: lastFM.api_key, method: "track.scrobble" })
+      params = lastFM.auth.sign(params)
+
+      if params
+        $.ajax(
+          url: "#{lastFM.base_url}#{$.param(params)}",
+          type: 'POST',
+          success: (data)->
+            console.log "OK submitl playing"
           error: (data) ->
             console.log "could not. Reason: #{$('error', data.responseText).text()}"
         )
@@ -46,7 +62,8 @@ lastFM =
       window.open("http://last.fm/api/auth?#{$.param({api_key: key, token: token})}")
       
     getSignature: (params) ->
-      val = ("#{key}#{value}" for own key, value of params).join("")
+      keys = (key for own key, value of params).sort()
+      val = ("#{key}#{params[key]}" for key in keys).join("")
       console.log val
       $.md5 "#{val}#{lastFM.secret}"
 
@@ -84,10 +101,7 @@ jQuery ($) ->
   chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
     switch request.type
       when 'SubmitNowPlaying'
-        console.log request
-        #lastFM.scrobbler.SubmitNowPlaying request.track
+        lastFM.scrobbler.submitNowPlaying request.track
       when 'Submit'
-        console.log request
-        console.log request.track.duration
-        # lastFM.scrobbler.Submit request.track
+        lastFM.scrobbler.submit request.track
       else console.log "Unknown message: #{request.type}"
