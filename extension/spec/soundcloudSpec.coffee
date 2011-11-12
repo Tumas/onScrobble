@@ -15,3 +15,7 @@ describe "onScrobble", ->
 
       it "should prepend artist", ->
         expect(onScrobble.artist("indigolab", "Chaos Falls")).toEqual "indigolab - Chaos Falls"
+
+      it "should decode html entities", ->
+        track = "Essay & Stumbleine - Rhiannon (\"buy this track\" for DL)"
+        expect(onScrobble.artist("Essay &amp; Stumbleine", "Rhiannon (&quot;buy this track&quot; for DL)")).toEqual track

@@ -7,11 +7,11 @@ onScrobble.soundcloud =
       playStart: "onAudioPlayStart"
 
     artist: (username, track) ->
-      trackInfo = track
+      trackInfo = "#{username} - #{track}"
 
-      if not track.match(' (-|–) ') and not track.match(new RegExp("^#{username}"))
-        trackInfo = "#{username} - #{track}"
-      trackInfo
+      if track.match(' (-|–) ') or track.match(new RegExp("^#{username}"))
+        trackInfo = track
+      $('<textarea/>').html(trackInfo).val()
 
     load: ->
       # State 
