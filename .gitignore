@@ -1,2 +1,2 @@
 extension/*.js
-extension/**/*.js
+extension/spec/*.js

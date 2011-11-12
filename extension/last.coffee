@@ -4,46 +4,48 @@ lastFM =
   secret: "a98e0e7d1d10805e9898b483ba396a38"
 
   auth:
-    # authentication flow
-    # todo authentication flow
-    #   localStorage to store sessionID
-    #   localStorage to cache failed scrobbles
-    #
-    #   authentication flow:
-    #     
-    #     1. fetch a request token (valid for 60 minutes)
-    #     2. with request token, request authorization from the user (api_key, authorization_token)
-    #       user grant application permission
-    #
-    #     3. get a session key (infite lifetime, store it securely. Users are able to revoke privileges 
-    #         for your application on Last.fm, redering session key invalid)
-    #
-    #     4. sign requests with session key + trickery
-
     sessionID: ->
       localStorage['onScrobble.sessionID']
+
+    authToken: ->
+      localStorage['onScrobble.authToken']
     
     sign: ->
-      sId = @sessionID
-      if not sId
-        sId = authorize
+      sId = @sessionID()
 
-    authorize: ->
-      requestToken lastFM.api_key
-      # sessionID
-    
+      unless sId
+        @requestToken(lastFM.api_key)
+
+        # request session Id for new token
+        @requestSession lastFM.api_key, @authToken()
+        sId = @sessionID()
+
+      if sId
+        console.log "Scrobble!: #{sId}"
+      else
+        console.log "could not get sessionID"
+      console.log "SEssion id: #{sId}"
+
     requestAuth: (key, token) ->
       window.open("http://last.fm/api/auth?#{$.param({api_key: key, token: token})}")
+      
+    getSignature: (params) ->
+      val = ("#{key}#{value}" for own key, value of params).join("")
+      console.log "#{val}#{lastFM.secret}"
+      $.md5("#{val}#{lastFM.secret}")
 
     requestSession: (key, token) ->
+      return false if not token
+      signature = @getSignature({api_key: key, method: 'auth.getSession', token: token})
+
       $.ajax(
           url: "#{lastFM.base_url}" +
-               "#{$.param({method: "auth.getsession", api_key: key, token: token})}",
+               "#{$.param({method: "auth.getSession", api_key: key, token: token, api_sig: signature})}",
+          contentType: 'application/xml',
           success: (data)->
             key = $('key', data).text()
+            localStorage['onScrobble.sessionID'] = key
             console.log "Session key: #{key}"
-            # save session key for further storage
-            
           error: (data) ->
             console.log "could not get token. Reason: #{$('error', data.responseText).text()}"
       )
@@ -51,15 +53,20 @@ lastFM =
     requestToken: (key) ->
       $.ajax(
           url: "#{lastFM.base_url}" +
-               "#{$.param({method: "auth.gettoken", api_key: key})}",
+               "#{$.param({method: "auth.getToken", api_key: key})}",
+          context: this,
           success: (data)->
             token = $('token', data).text()
-            requestAuth key, token
-            requestSession key, token
+            localStorage['onScrobble.authToken'] = token
+            @requestAuth key, token
           error: (data) ->
             console.log "could not get token. Reason: #{$('error', data.responseText).text()}"
       )
 
 jQuery ($) ->
+  lastFM.auth.requestToken(lastFM.api_key) unless lastFM.auth.sessionID()
+
   chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
     console.log "got message!: #{request.type} #{request.track}"
+    console.log lastFM.auth.sign()
+    console.log lastFM
