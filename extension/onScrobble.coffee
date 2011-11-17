@@ -39,7 +39,6 @@ onScrobble =
       $("<textarea />").html(string).val()
 
     submit: (track) ->
-      # todo: better track passing
       $('span#scrobblingPort').attr('track', JSON.stringify(track))
       document.getElementById('scrobblingPort').dispatchEvent submitEvent
 

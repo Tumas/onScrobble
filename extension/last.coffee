@@ -4,34 +4,30 @@ lastFM =
   secret: "a98e0e7d1d10805e9898b483ba396a38"
 
   scrobbler:
-    # TODO: one method + fallback for failed scrobbles
-    submitNowPlaying: (track) ->
-      # some filtering?
-      params = $.extend(track, { api_key: lastFM.api_key, method: "track.updateNowPlaying" })
+    submit: (track, method = 'track.scrobble') ->
+      # available params:
+      #  track
+      #  artist
+      #  album *
+      #  albumArtist * 
+      #  trackNumber * 
+      #  mbid *
+      #  duration *
+      
+      # fallback for failed scrobbles + onLoad
+      params = $.extend(track, { api_key: lastFM.api_key, method: method })
       params = lastFM.auth.sign(params)
 
       if params
         $.ajax(
-          url: "#{lastFM.base_url}#{$.param(params)}",
+          url: "#{lastFM.base_url}#{$.param($.extend(params, {'format': 'json'}))}",
           type: 'POST',
           success: (data)->
             console.log "OK now playing"
+            console.log data
           error: (data) ->
             console.log "could not. Reason: #{$('error', data.responseText).text()}"
-        )
-
-    submit: (track) ->
-      params = $.extend(track, { api_key: lastFM.api_key, method: "track.scrobble" })
-      params = lastFM.auth.sign(params)
-
-      if params
-        $.ajax(
-          url: "#{lastFM.base_url}#{$.param(params)}",
-          type: 'POST',
-          success: (data)->
-            console.log "OK submitl playing"
-          error: (data) ->
-            console.log "could not. Reason: #{$('error', data.responseText).text()}"
+            console.log data
         )
 
   auth:
@@ -96,12 +92,15 @@ lastFM =
       )
 
 jQuery ($) ->
-  lastFM.auth.requestToken(lastFM.api_key) unless lastFM.auth.sessionID()
+  console.log document.test
+  lastFM.auth.requestToken(lastFM.api_key) unless lastFM.auth.sessionID() or document.test
 
   chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
+    console.log request
+
     switch request.type
       when 'SubmitNowPlaying'
-        lastFM.scrobbler.submitNowPlaying request.track
+        lastFM.scrobbler.submit request.track, 'track.UpdateNowPlaying'
       when 'Submit'
         lastFM.scrobbler.submit request.track
       else console.log "Unknown message: #{request.type}"

@@ -8,7 +8,7 @@ onScrobble.soundcloud =
 
     trackInfo: (trackData, timeStamp) ->
       title = onScrobble.decodeHTML trackData.title
-      artist = onScrobble.decodeHTML trackData.user.username 
+      artist = onScrobble.decodeHTML trackData.user.username
       temp = title.split(/\s-|–\s/)
 
       if temp.length > 1
