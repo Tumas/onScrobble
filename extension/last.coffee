@@ -3,18 +3,18 @@ lastFM =
   api_key: "86afa310841f8a1d440b2310b1845b77"
   secret: "a98e0e7d1d10805e9898b483ba396a38"
 
+  storage:
+    fallback: 'onScrobble.fallback'
+
   scrobbler:
+    handleScrobbleFailure: (track) ->
+      fallback = $.parseJSON localStorage[lastFM.storage.fallback]
+      fallback = [] unless fallback
+      fallback.push(track)
+      localStorage[lastFM.storage.fallback] = JSON.stringify(fallback)
+      console.log "failed scrobble: #{track.track}"
+
     submit: (track, method = 'track.scrobble') ->
-      # available params:
-      #  track
-      #  artist
-      #  album *
-      #  albumArtist * 
-      #  trackNumber * 
-      #  mbid *
-      #  duration *
-      
-      # fallback for failed scrobbles + onLoad
       params = $.extend(track, { api_key: lastFM.api_key, method: method })
       params = lastFM.auth.sign(params)
 
@@ -22,12 +22,10 @@ lastFM =
         $.ajax(
           url: "#{lastFM.base_url}#{$.param($.extend(params, {'format': 'json'}))}",
           type: 'POST',
+          context: this,
           success: (data)->
-            console.log "OK now playing"
-            console.log data
-          error: (data) ->
-            console.log "could not. Reason: #{$('error', data.responseText).text()}"
-            console.log data
+            if data.error and method == 'track.scrobble'
+              @handleScrobbleFailure(track)
         )
 
   auth:
@@ -60,7 +58,6 @@ lastFM =
     getSignature: (params) ->
       keys = (key for own key, value of params).sort()
       val = ("#{key}#{params[key]}" for key in keys).join("")
-      console.log val
       $.md5 "#{val}#{lastFM.secret}"
 
     requestSession: (key, token) ->
@@ -91,16 +88,18 @@ lastFM =
             console.log "could not get token. Reason: #{$('error', data.responseText).text()}"
       )
 
+(exports ? this).lastFM = lastFM
+
 jQuery ($) ->
-  console.log document.test
-  lastFM.auth.requestToken(lastFM.api_key) unless lastFM.auth.sessionID() or document.test
+  unless document.testingOnScrobble
+    lastFM.auth.requestToken(lastFM.api_key) unless lastFM.auth.sessionID()
 
-  chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
-    console.log request
+    chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
+      console.log request
 
-    switch request.type
-      when 'SubmitNowPlaying'
-        lastFM.scrobbler.submit request.track, 'track.UpdateNowPlaying'
-      when 'Submit'
-        lastFM.scrobbler.submit request.track
-      else console.log "Unknown message: #{request.type}"
+      switch request.type
+        when 'SubmitNowPlaying'
+          lastFM.scrobbler.submit request.track, 'track.UpdateNowPlaying'
+        when 'Submit'
+          lastFM.scrobbler.submit request.track
+        else console.log "Unknown message: #{request.type}"

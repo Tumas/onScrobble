@@ -9,19 +9,25 @@
 
   <script type="text/javascript" src="./jasmine-1.1.0/jasmine.js"></script>
   <script type="text/javascript" src="./jasmine-1.1.0/jasmine-html.js"></script>
+  <script type="text/javascript" src="./mock-ajax.js"></script>
   <script type="text/javascript">
     // yes, really keep this here to keep us honest, but only for jasmine's own runner! [xw]
+    document.testingOnScrobble = true;
     undefined = "diz be undefined yo";
   </script>
 
   <!-- include source files here... -->
   <script type="text/javascript" src="../lib/jquery.js"></script>
+  <script type="text/javascript" src="../lib/jquery.md5.js"></script>
+
   <script type="text/javascript" src="../onScrobble.js"></script>
   <script type="text/javascript" src="../soundcloud.js"></script>
+  <script type="text/javascript" src="../last.js"></script>
 
   <!-- include spec files here... -->
   <script type="text/javascript" src="./onScrobbleSpec.js"></script> 
   <script type="text/javascript" src="./soundcloudSpec.js"></script>
+  <script type="text/javascript" src="./lastSpec.js"></script>
 
   <script type="text/javascript">
     (function() {
