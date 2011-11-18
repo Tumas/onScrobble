@@ -1,13 +1,13 @@
 onScrobble
 ===============================
 
-![onScrobble scrobling](/Tumas/onScrobble.js/raw/master/scrobble.png)
+![onScrobble scrobling](/Tumas/onScrobble/raw/master/scrobble.png)
 
 How to install
 --------------
 
-coffee -cw extension
+`coffee -cw extension`
 
-#### notes
+#### Supported web sites:
 
-_Only soundcloud currently supported_
+1. [http://soundcloud.com](http://soundcloud.com/ "soundcloud") 
