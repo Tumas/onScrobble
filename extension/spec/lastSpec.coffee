@@ -66,7 +66,7 @@ describe "lastFM", ->
         expect($.parseJSON(localStorage[ts])).toEqual([tracks.track1, tracks.track2])
 
    
-    describe "subscribe", ->
+    describe "scrobble", ->
       request = undefined
 
       # mock response
