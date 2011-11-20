@@ -39,11 +39,11 @@ onScrobble =
       $("<textarea />").html(string).val()
 
     submit: (track) ->
-      $('span#scrobblingPort').attr('track', JSON.stringify(track))
+      $('span#scrobblingPort').attr('track', onScrobble.decodeHTML(JSON.stringify(track)))
       document.getElementById('scrobblingPort').dispatchEvent submitEvent
 
     submitNowPlaying: (track) ->
-      $('span#scrobblingPort').attr('track', JSON.stringify(track))
+      $('span#scrobblingPort').attr('track', onScrobble.decodeHTML(JSON.stringify(track)))
       document.getElementById('scrobblingPort').dispatchEvent submitNPEvent
 
 (exports ? this).onScrobble = onScrobble

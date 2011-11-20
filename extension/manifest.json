@@ -11,7 +11,7 @@
 
   "content_scripts": [
     {
-      "matches": ["http://soundcloud.com/*/*", "http://soundcloud.com/*"],
+      "matches": ["*://soundcloud.com/*"],
       "js": ["/lib/jquery.js", "onScrobble.js", "soundcloud.js"]
     }
   ]
