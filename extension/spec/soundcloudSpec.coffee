@@ -4,6 +4,7 @@ describe "onScrobble", ->
       it "should set artist, track and duration vlaues", ->
         info = { user: { username: "Overall Triple" }, title: "Overall Triple - Jaku", duration: 406253 }
         track = onScrobble.trackInfo(info)
+        console.log track
         expect(track.artist).toEqual "Overall Triple"
         expect(track.track).toEqual "Jaku"
         expect(track.duration).toEqual 406
@@ -33,12 +34,25 @@ describe "onScrobble", ->
         expect(track.track).toEqual "Sy Defects"
 
       it "should decode html entities", ->
-        info = { user: { username: "" }, title: "Essay &amp; Stumbleine - Rhiannon (&quot;buy this track&quot; for DL)", duration: 406253 }
+        info = { user: { username: "test" }, title: "Essay &amp; Stumbleine - Rhiannon (&quot;buy this track&quot; for DL)", duration: 406253 }
         track = onScrobble.trackInfo(info)
         expect(track.artist).toEqual "Essay & Stumbleine"
         expect(track.track).toEqual "Rhiannon (\"buy this track\" for DL)"
 
-    # TODO: when prepended user name and no dash is present 
-    #   MAD DOG BOY EXAMPLE
-    #
-    #   + bug when page click in the middle of the play
+      it "should remove prepended artist from track name", ->
+        info = { user: { username: "Corbie" }, title: "Corbie-mosquitoes lullaby (excerpt 2011)", duration: 406253 }
+        track = onScrobble.trackInfo(info)
+        expect(track.artist).toEqual "Corbie"
+        expect(track.track).toEqual "mosquitoes lullaby (excerpt 2011)"
+
+      it "should be case insensitive", ->
+        info = { user: { username: "Corbie" }, title: "corbie-mosquitoes lullaby (excerpt 2011)", duration: 406253 }
+        track = onScrobble.trackInfo(info)
+        expect(track.artist).toEqual "corbie"
+        expect(track.track).toEqual "mosquitoes lullaby (excerpt 2011)"
+
+      it "should work with longed dash", ->
+        info = { user: { username: "Corbie" }, title: "corbie–mosquitoes lullaby (excerpt 2011)", duration: 406253 }
+        track = onScrobble.trackInfo(info)
+        expect(track.artist).toEqual "corbie"
+        expect(track.track).toEqual "mosquitoes lullaby (excerpt 2011)"

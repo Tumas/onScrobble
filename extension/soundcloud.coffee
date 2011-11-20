@@ -7,21 +7,24 @@ onScrobble.soundcloud =
       playStart: "onAudioPlayStart"
 
     trackInfo: (trackData, timeStamp) ->
-      title = onScrobble.decodeHTML trackData.title
-      artist = onScrobble.decodeHTML trackData.user.username
-      temp = title.split(/\s-|–\s/)
+      data = onScrobble.decodeHTML(trackData.title)
+      info =
+        timestamp: timeStamp,
+        duration : onScrobble.secondify(trackData.duration),
+        artist   : onScrobble.decodeHTML(trackData.user.username),
+        track    : data
 
-      if temp.length > 1
-        artist = $.trim(temp[0])
-        title = $.trim(temp[1])
+      mData = data.match new RegExp("^#{info.artist}", "i")
+      if mData
+        info.artist = $.trim mData[0]
+        info.track = data.replace(new RegExp("^#{info.artist} *(-|–) *", "i"), "")
+      else
+        mData = data.split(/\s-|–\s/)
+        if mData.length > 1
+          info.artist = $.trim(mData[0])
+          info.track = $.trim(mData[1])
 
-      {
-        track:  title,
-        artist: artist,
-        duration: onScrobble.secondify(trackData.duration),
-        timestamp: timeStamp
-      }
-
+      info
 
     load: ->
       # State 
