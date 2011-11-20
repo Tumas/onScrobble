@@ -5,19 +5,57 @@ lastFM =
 
   storage:
     fallback: 'onScrobble.fallback'
-    token:  'onScrobble.authToken'
-    session: 'onScrobble.sessionID'
+    token:    'onScrobble.authToken'
+    session:  'onScrobble.sessionID'
 
   scrobbler:
-    handleScrobbleFailure: (track) ->
-      fallback = $.parseJSON localStorage[lastFM.storage.fallback]
-      fallback = [] unless fallback
-      fallback.push(track)
-      localStorage[lastFM.storage.fallback] = JSON.stringify(fallback)
-      console.log "failed scrobble: #{track.track}"
+    fallbackTracks: ->
+      tracks = $.parseJSON localStorage[lastFM.storage.fallback]
+      tracks = [] unless tracks
+      tracks
 
-    submit: (track, method = 'track.scrobble') ->
-      params = $.extend(track, { api_key: lastFM.api_key, method: method })
+    saveTracks: (tracks) ->
+      localStorage[lastFM.storage.fallback] = JSON.stringify(tracks)
+
+    handleScrobbleFailure: (track) ->
+      tracks = @fallbackTracks()
+      tracks.push(track)
+      @saveTracks(tracks)
+
+    indexProperties: (object, index, temp = {}) ->
+      temp["#{key}[#{index}]"] = value for own key, value of object
+      temp
+
+    submitBatch: (batchSize = 50, tracks = @fallbackTracks()) ->
+      if tracks.length > 0
+        unrecorded = []
+        requiredSubmits = Math.ceil(tracks.length / batchSize)
+
+        for requestNumber in [0...requiredSubmits]
+          params = {}
+          number = 0
+
+          for trackNumber in [0...batchSize]
+            index = requestNumber * batchSize + trackNumber
+
+            if index < tracks.length
+              $.extend(params, @indexProperties(tracks[index], number++))
+
+          @submit params, 'track.scrobble', false,
+            (data, method, track) ->
+              if data.error
+                row = requestNumber * batchSize
+                unrecorded = unrecorded.concat(tracks[row...(row+number)])
+
+        @saveTracks(unrecorded)
+
+    # default submit handle
+    funk: (data, method, track) ->
+      if data.error and method == 'track.scrobble'
+        lastFM.scrobbler.handleScrobbleFailure(track)
+
+    submit: (track, method = 'track.scrobble', async = true, funk = @funk) ->
+      params = $.extend({ api_key: lastFM.api_key, method: method }, track)
       params = lastFM.auth.sign(params)
 
       if params
@@ -25,17 +63,14 @@ lastFM =
           url: "#{lastFM.base_url}#{$.param($.extend(params, {'format': 'json'}))}",
           type: 'POST',
           context: this,
+          async: async,
           success: (data)->
-            console.log 'scrobbled'
-            console.log track
+            console.log "submit"
             console.log method
+            console.log data
 
-            if data.error and method == 'track.scrobble'
-              @handleScrobbleFailure(track)
-
+            funk(data, method, track)
         $.ajax(ajaxParams)
-       else if method == 'track.scrobble'
-          @handleScrobbleFailure(track)
 
   auth:
     sessionID: ->
@@ -119,7 +154,7 @@ lastFM =
             token: data.token
             timestamp: new Date().getTime()
 
-          localStorage['onScrobble.authToken'] = JSON.stringify(token)
+          localStorage[lastFM.storage.token] = JSON.stringify(token)
           @requestAuth key, token.token
         error: (data) ->
           console.log "could not get token."
@@ -132,6 +167,7 @@ lastFM =
 jQuery ($) ->
   unless document.testingOnScrobble
     lastFM.auth.authenticate()
+    lastFM.scrobbler.submitBatch()
 
     chrome.extension.onRequest.addListener (request, sender, sendResponse) ->
       console.log request
