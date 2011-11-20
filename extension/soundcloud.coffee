@@ -8,6 +8,11 @@ onScrobble.soundcloud =
 
     trackInfo: (trackData, timeStamp) ->
       data = onScrobble.decodeHTML(trackData.title)
+
+      # skip preceeding track number if it's not an artist
+      sMatch = data.match(/ *(-|–) */)
+      data.replace(/^\d{0,2} *(-|–) */, "") if sMatch and sMatch[1]
+
       info =
         timestamp: timeStamp,
         duration : onScrobble.secondify(trackData.duration),
@@ -23,7 +28,6 @@ onScrobble.soundcloud =
         if mData.length > 1
           info.artist = $.trim(mData[0])
           info.track = $.trim(mData[1])
-
       info
 
     load: ->

@@ -4,7 +4,6 @@ describe "onScrobble", ->
       it "should set artist, track and duration vlaues", ->
         info = { user: { username: "Overall Triple" }, title: "Overall Triple - Jaku", duration: 406253 }
         track = onScrobble.trackInfo(info)
-        console.log track
         expect(track.artist).toEqual "Overall Triple"
         expect(track.track).toEqual "Jaku"
         expect(track.duration).toEqual 406
@@ -56,3 +55,10 @@ describe "onScrobble", ->
         track = onScrobble.trackInfo(info)
         expect(track.artist).toEqual "corbie"
         expect(track.track).toEqual "mosquitoes lullaby (excerpt 2011)"
+
+      it "should strip track number", ->
+        info = { user: { username: "test" }, duration: 406253,
+                 title: "04 - bohren & der club of gore - street tattoo" }
+        track = onScrobble.trackInfo(info)
+        expect(track.artist).toEqual "bohren & der club of gore"
+        expect(track.track).toEqual "street tattoo"
