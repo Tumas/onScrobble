@@ -27,6 +27,18 @@ onScrobble =
       track = data.target.attributes[1].nodeValue
       chrome.extension.sendRequest { type: data.type, track: $.parseJSON(track) }
 
+  # for un-injected content scripts
+  # data.type 'Submit' | 'SubmitNowPlaying'
+  # data.track
+  #   artist
+  #   track
+  #   timestamp
+  submit: (data) ->
+    chrome.extension.sendRequest data
+
+  timestamp: ->
+    @scrobbler().secondify new Date().getTime()
+
   scrobbler: ->
     # duration must be in seconds
     canSubmit: (timePlayed, duration) ->

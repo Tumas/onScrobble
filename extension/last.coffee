@@ -177,4 +177,7 @@ jQuery ($) ->
           lastFM.scrobbler.submit request.track, 'track.UpdateNowPlaying'
         when 'Submit'
           lastFM.scrobbler.submit request.track
-        else console.log "Unknown message: #{request.type}"
+        else
+          console.log "Unknown message: #{request.type}"
+          console.log request.track
+

@@ -13,6 +13,10 @@
     {
       "matches": ["*://soundcloud.com/*"],
       "js": ["/lib/jquery.js", "onScrobble.js", "soundcloud.js"]
+    },
+    {
+      "matches": ["*://*.bandcamp.com/*"],
+      "js": ["/lib/jquery.js", "onScrobble.js", "bandcamp.js"]
     }
   ]
 }
