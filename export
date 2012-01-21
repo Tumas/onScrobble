@@ -1,0 +1,13 @@
+#!/bin/sh
+
+DEST='package'
+
+if [ -e $DEST ]; then
+  rm -rf $DEST
+fi
+
+mkdir $DEST
+cp extension/*.json   $DEST
+cp extension/*.html   $DEST
+cp extension/*.js     $DEST
+cp -r extension/lib/  $DEST
