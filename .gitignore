@@ -2,3 +2,4 @@ extension/*.js
 extension/spec/*.js
 TODO
 package
+**/*.pem
