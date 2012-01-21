@@ -10,8 +10,8 @@ onScrobble.soundcloud =
       data = onScrobble.decodeHTML(trackData.title)
 
       # skip preceeding track number if it's not an artist
-      sMatch = data.match(/ *(-|–) */)
-      data.replace(/^\d{0,2} *(-|–) */, "") if sMatch and sMatch[1]
+      sMatch = data.match(/\ *(-|–) */)
+      data = data.replace(/^\d{0,2} *(-|–) */, "") if sMatch and sMatch[1]
 
       info =
         timestamp: timeStamp,

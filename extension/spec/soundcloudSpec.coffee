@@ -57,8 +57,7 @@ describe "onScrobble", ->
         expect(track.track).toEqual "mosquitoes lullaby (excerpt 2011)"
 
       it "should strip track number", ->
-        info = { user: { username: "test" }, duration: 406253,
-                 title: "04 - bohren & der club of gore - street tattoo" }
+        info = { user: { username: "test" }, duration: 406253, title: "04 - bohren & der club of gore - street tattoo" }
         track = onScrobble.trackInfo(info)
         expect(track.artist).toEqual "bohren & der club of gore"
         expect(track.track).toEqual "street tattoo"
